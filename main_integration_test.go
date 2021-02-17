@@ -29,13 +29,13 @@ func TestMain(m *testing.M) {
 		MigrationsDirectory: "./migrations",
 	})
 
-	e2e.StartContainers(pc)
+	e2e.Start(pc)
 
-	defer e2e.StopContainers()
+	defer e2e.Stop()
 
 	code := m.Run()
 
-	e2e.StopContainers()
+	e2e.Stop()
 
 	os.Exit(code)
 }

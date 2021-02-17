@@ -16,7 +16,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sethvargo/go-retry"
 
-	// postgres required to execute migrations
+	// packages required to execute migrations
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
@@ -53,37 +53,8 @@ func (c *Container) Name() string {
 	return c.name
 }
 
-// Start creates and initializes a docker container for a postgres db
-func (c *Container) Start(ctx context.Context, pool *dockertest.Pool) (*dockertest.Resource, error) {
-
-	// create container resource
-	resource, err := c.createResource(pool)
-	if err != nil {
-		return nil, err
-	}
-
-	// db url
-	url := c.createDBURL(resource)
-
-	// check db connection
-	err = checkDb(ctx, url)
-	if err != nil {
-		return nil, err
-	}
-
-	// run migrations when a directory is specified
-	if strings.TrimSpace(c.params.MigrationsDirectory) != "" {
-		err = runMigrations(c.params.MigrationsDirectory, url)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return resource, nil
-}
-
-func (c *Container) createResource(pool *dockertest.Pool) (*dockertest.Resource, error) {
-
+// Options to start a postgres container accordingly to the params
+func (c *Container) Options() (*dockertest.RunOptions, error) {
 	strPort := strconv.Itoa(c.params.Port)
 	pb := map[docker.Port][]docker.PortBinding{}
 	pb[docker.Port(fmt.Sprintf("%d/tcp", port))] = []docker.PortBinding{
@@ -93,7 +64,7 @@ func (c *Container) createResource(pool *dockertest.Pool) (*dockertest.Resource,
 		},
 	}
 
-	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
+	return &dockertest.RunOptions{
 		Name:       c.name,
 		Repository: "postgres",
 		Tag:        "13.2-alpine",
@@ -101,16 +72,32 @@ func (c *Container) createResource(pool *dockertest.Pool) (*dockertest.Resource,
 			"POSTGRES_DB=" + c.params.Database,
 			"POSTGRES_USER=" + c.params.User,
 			"POSTGRES_PASSWORD=" + c.params.Password,
+			"POSTGRES_HOST_AUTH_METHOD=trust",
 		},
 		PortBindings: pb,
-	})
+	}, nil
+}
 
+// AfterStart will check the connection and execute migrations
+func (c *Container) AfterStart(ctx context.Context, r *dockertest.Resource) error {
+	// db url
+	url := c.createDBURL(r)
+
+	// check db connection
+	err := checkDb(ctx, url)
 	if err != nil {
-		err = errors.Wrap(err, "failed to start postgres container, check if docker is installed, running and exposing deamon on tcp://localhost:2375")
-		return nil, err
+		return err
 	}
 
-	return resource, nil
+	// run migrations when a directory is specified
+	if strings.TrimSpace(c.params.MigrationsDirectory) != "" {
+		err = runMigrations(c.params.MigrationsDirectory, url)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (c *Container) createDBURL(container *dockertest.Resource) url.URL {
@@ -157,6 +144,7 @@ func checkDb(ctx context.Context, dbURL url.URL) error {
 		err = errors.Wrap(err, "failed to start postgres")
 		return err
 	}
+
 	return nil
 }
 
