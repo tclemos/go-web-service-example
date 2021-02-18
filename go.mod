@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/Microsoft/go-winio v0.4.16 // indirect
+	github.com/aws/aws-sdk-go v1.17.7
 	github.com/cenkalti/backoff/v3 v3.2.2 // indirect
 	github.com/containerd/continuity v0.0.0-20210208174643-50096c924a4e // indirect
 	github.com/gofrs/uuid v3.2.0+incompatible

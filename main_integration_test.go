@@ -7,6 +7,7 @@ import (
 	"github.com/tclemos/go-dockertest-example/config"
 	"github.com/tclemos/go-dockertest-example/e2e"
 	"github.com/tclemos/go-dockertest-example/e2e/postgres"
+	"github.com/tclemos/go-dockertest-example/e2e/sqs"
 )
 
 func TestMain(m *testing.M) {
@@ -19,6 +20,9 @@ func TestMain(m *testing.M) {
 			Password: "password",
 			Database: "my_postgres_db",
 		},
+		ThingNotifier: config.SqsConfig{
+			QueueName: "thing_created",
+		},
 	}
 
 	pc := postgres.NewContainer(e2e.Config.MyPostgresDb.Database, postgres.Params{
@@ -29,9 +33,13 @@ func TestMain(m *testing.M) {
 		MigrationsDirectory: "./migrations",
 	})
 
-	e2e.Start(pc)
+	sc := sqs.NewContainer("aws_sqs", sqs.Params{
+		Queues: []sqs.Queue{
+			{Name: e2e.Config.ThingNotifier.QueueName},
+		},
+	})
 
-	defer e2e.Stop()
+	e2e.Start(pc, sc)
 
 	code := m.Run()
 

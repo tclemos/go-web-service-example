@@ -7,7 +7,8 @@ import (
 )
 
 type Config struct {
-	MyPostgresDb PostgresConfig `json:"my_postgres_db"`
+	MyPostgresDb  PostgresConfig `json:"my_postgres_db"`
+	ThingNotifier SqsConfig      `json:"thing_notifier"`
 }
 
 type PostgresConfig struct {
@@ -16,6 +17,10 @@ type PostgresConfig struct {
 	User     string `json:"user"`
 	Password string `json:"password"`
 	Database string `json:"database"`
+}
+
+type SqsConfig struct {
+	QueueName string `json:"queue_name`
 }
 
 func LoadConfig(path string) Config {

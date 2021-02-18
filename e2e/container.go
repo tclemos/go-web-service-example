@@ -83,7 +83,7 @@ func startContainer(ctx context.Context, p *dockertest.Pool, o *dockertest.RunOp
 		return nil, err
 	}
 
-	err = r.Expire(60)
+	//err = r.Expire(60)
 	if err != nil {
 		errors.Wrap(err, "could not setup container to expire: %s")
 	}
