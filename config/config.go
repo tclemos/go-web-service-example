@@ -17,9 +17,11 @@ type PostgresConfig struct {
 	User     string `json:"user"`
 	Password string `json:"password"`
 	Database string `json:"database"`
+	Schema   string `json:"schema"`
 }
 
 type SqsConfig struct {
+	Region    string `json:"region"`
 	QueueName string `json:"queue_name`
 }
 

@@ -12,7 +12,7 @@ import (
 
 func TestMain(m *testing.M) {
 
-	e2e.Config = config.Config{
+	c := config.Config{
 		MyPostgresDb: config.PostgresConfig{
 			Host:     "localhost",
 			Port:     5432,
@@ -22,24 +22,31 @@ func TestMain(m *testing.M) {
 		},
 		ThingNotifier: config.SqsConfig{
 			QueueName: "thing_created",
+			Region:    "eu-central-1",
 		},
 	}
 
-	pc := postgres.NewContainer(e2e.Config.MyPostgresDb.Database, postgres.Params{
-		Port:                e2e.Config.MyPostgresDb.Port,
-		User:                e2e.Config.MyPostgresDb.User,
-		Password:            e2e.Config.MyPostgresDb.Password,
-		Database:            e2e.Config.MyPostgresDb.Database,
+	pc := postgres.NewContainer(c.MyPostgresDb.Database, postgres.Params{
+		Port:                c.MyPostgresDb.Port,
+		User:                c.MyPostgresDb.User,
+		Password:            c.MyPostgresDb.Password,
+		Database:            c.MyPostgresDb.Database,
 		MigrationsDirectory: "./migrations",
 	})
 
 	sc := sqs.NewContainer("aws_sqs", sqs.Params{
+		Region: c.ThingNotifier.Region,
 		Queues: []sqs.Queue{
-			{Name: e2e.Config.ThingNotifier.QueueName},
+			{Name: c.ThingNotifier.QueueName,
+				DefaultVisibilityTimeoutInSeconds: 1,
+				DelayInSeconds:                    2,
+				ReceiveMessageWaitInSeconds:       3,
+			},
 		},
 	})
 
 	e2e.Start(pc, sc)
+	e2e.AddValue("config", c)
 
 	code := m.Run()
 

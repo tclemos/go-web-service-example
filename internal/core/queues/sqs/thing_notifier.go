@@ -17,8 +17,8 @@ type ThingNotifier struct {
 	session   *session.Session
 }
 
-func NewThingNotifier(qn string, s *session.Session) *ThingNotifier {
-	svc := sqs.New(s)
+func NewThingNotifier(qn string, s *session.Session, c *aws.Config) *ThingNotifier {
+	svc := sqs.New(s, c)
 	urlOutput, err := svc.GetQueueUrl(&sqs.GetQueueUrlInput{
 		QueueName: &qn,
 	})

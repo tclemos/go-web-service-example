@@ -7,7 +7,6 @@ import (
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/pkg/errors"
-	"github.com/tclemos/go-dockertest-example/config"
 	"github.com/tclemos/go-dockertest-example/logger"
 )
 
@@ -17,8 +16,13 @@ var (
 	pool      *dockertest.Pool
 	resources []*dockertest.Resource
 
-	Config config.Config
-	Ctx    context.Context
+	Ctx context.Context
+)
+
+type ctxKey string
+
+const (
+	valuesKey = ctxKey("values")
 )
 
 // Container represents a docker container
@@ -37,7 +41,7 @@ type Container interface {
 // Start the integration test environment
 func Start(containers ...Container) {
 	resources = []*dockertest.Resource{}
-	Ctx = context.Background()
+	Ctx = context.WithValue(context.Background(), valuesKey, map[string]interface{}{})
 
 	var err error
 	pool, err = dockertest.NewPool("")
@@ -69,6 +73,25 @@ func Stop() {
 	}
 }
 
+// AddValue allows a value to be stored during the TestMain to be used within tests
+func AddValue(key string, value interface{}) {
+	values := Ctx.Value(valuesKey).(map[string]interface{})
+	values[key] = value
+	Ctx = context.WithValue(Ctx, valuesKey, values)
+}
+
+// GetValue allows a value to be retrieved by its key
+func GetValue(key string) interface{} {
+	values := Ctx.Value(valuesKey).(map[string]interface{})
+	return values[key]
+}
+
+// GetValues gets all stored values
+func GetValues() map[string]interface{} {
+	values := Ctx.Value(valuesKey).(map[string]interface{})
+	return values
+}
+
 // startContainer creates and initializes a container accordingly to the provided options
 func startContainer(ctx context.Context, p *dockertest.Pool, o *dockertest.RunOptions) (*dockertest.Resource, error) {
 	r, err := p.RunWithOptions(o, func(config *docker.HostConfig) {
@@ -83,7 +106,7 @@ func startContainer(ctx context.Context, p *dockertest.Pool, o *dockertest.RunOp
 		return nil, err
 	}
 
-	//err = r.Expire(60)
+	err = r.Expire(600) // drop containers after 10 minutes if the got stuck
 	if err != nil {
 		errors.Wrap(err, "could not setup container to expire: %s")
 	}
