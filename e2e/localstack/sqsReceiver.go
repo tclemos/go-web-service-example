@@ -45,9 +45,9 @@ func (r SqsReceiver) Receive() ([]*sqs.Message, error) {
 		MessageAttributeNames: []*string{
 			aws.String(sqs.QueueAttributeNameAll),
 		},
-		QueueUrl: &r.queueURL,
-		// MaxNumberOfMessages: aws.Int64(1),
-		VisibilityTimeout: &visibilityTimeout,
+		QueueUrl:            &r.queueURL,
+		MaxNumberOfMessages: aws.Int64(1),
+		VisibilityTimeout:   &visibilityTimeout,
 	})
 	if err != nil {
 		return nil, err

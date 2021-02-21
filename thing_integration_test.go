@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/gofrs/uuid"
@@ -36,6 +37,7 @@ func TestCreateAndGet(t *testing.T) {
 		t.Errorf("Failed to create sqs session: %v : %w", c.ThingNotifier, err)
 		return
 	}
+	sqsReceiver := localstack.NewSqsReceiver(c.ThingNotifier.QueueName, session)
 	tn := sqs.NewThingNotifier(c.ThingNotifier.QueueName, session)
 
 	ts := services.NewThingService(tr, tn)
@@ -69,8 +71,9 @@ func TestCreateAndGet(t *testing.T) {
 		}
 	}
 
+	// awaits 1 second until the message can be received
 	// Assert Thing Created notification
-	sqsReceiver := localstack.NewSqsReceiver(c.ThingNotifier.QueueName, session)
+	time.Sleep(10000)
 	messages, err := sqsReceiver.Receive()
 	if err != nil {
 		t.Errorf("failed to receive thing created message, err: %w", err)

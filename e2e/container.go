@@ -50,6 +50,7 @@ func Start(containers ...Container) {
 	}
 
 	for _, c := range containers {
+		fmt.Printf("loading container: %s\n", c.Name())
 		o, err := c.Options()
 		handleContainerErr(c.Name(), "can't load run options", err)
 
@@ -94,6 +95,8 @@ func GetValues() map[string]interface{} {
 
 // startContainer creates and initializes a container accordingly to the provided options
 func startContainer(ctx context.Context, p *dockertest.Pool, o *dockertest.RunOptions) (*dockertest.Resource, error) {
+	fmt.Printf("starting container: %s\n", o.Name)
+	o.Name = ""
 	r, err := p.RunWithOptions(o, func(config *docker.HostConfig) {
 		// set AutoRemove to true so that stopped container goes away by itself
 		config.AutoRemove = true
@@ -106,7 +109,7 @@ func startContainer(ctx context.Context, p *dockertest.Pool, o *dockertest.RunOp
 		return nil, err
 	}
 
-	err = r.Expire(600) // drop containers after 10 minutes if the got stuck
+	err = r.Expire(50) // drop containers after 3 minutes if the got stuck
 	if err != nil {
 		errors.Wrap(err, "could not setup container to expire: %s")
 	}

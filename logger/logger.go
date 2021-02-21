@@ -5,7 +5,7 @@ import (
 )
 
 func Infof(m string, p ...string) {
-	fmt.Println(fmt.Sprintf("INFO: %s: %w", m))
+	fmt.Println(fmt.Sprintf("INFO: %s", m))
 }
 
 func Errorf(err error, m string, p ...string) {
