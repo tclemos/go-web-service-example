@@ -6,8 +6,8 @@ import (
 
 	"github.com/tclemos/go-dockertest-example/config"
 	"github.com/tclemos/go-dockertest-example/e2e"
+	"github.com/tclemos/go-dockertest-example/e2e/localstack"
 	"github.com/tclemos/go-dockertest-example/e2e/postgres"
-	"github.com/tclemos/go-dockertest-example/e2e/sqs"
 )
 
 func TestMain(m *testing.M) {
@@ -26,7 +26,7 @@ func TestMain(m *testing.M) {
 		},
 	}
 
-	pc := postgres.NewContainer(c.MyPostgresDb.Database, postgres.Params{
+	myPostgresDb := postgres.NewContainer(c.MyPostgresDb.Database, postgres.Params{
 		Port:                c.MyPostgresDb.Port,
 		User:                c.MyPostgresDb.User,
 		Password:            c.MyPostgresDb.Password,
@@ -34,18 +34,14 @@ func TestMain(m *testing.M) {
 		MigrationsDirectory: "./migrations",
 	})
 
-	sc := sqs.NewContainer("aws_sqs", sqs.Params{
+	localstack := localstack.NewContainer("localstack", localstack.Params{
 		Region: c.ThingNotifier.Region,
-		Queues: []sqs.Queue{
-			{Name: c.ThingNotifier.QueueName,
-				DefaultVisibilityTimeoutInSeconds: 1,
-				DelayInSeconds:                    2,
-				ReceiveMessageWaitInSeconds:       3,
-			},
+		SqsQueues: []localstack.SqsQueue{
+			{Name: c.ThingNotifier.QueueName},
 		},
 	})
 
-	e2e.Start(pc, sc)
+	e2e.Start(myPostgresDb, localstack)
 	e2e.AddValue("config", c)
 
 	code := m.Run()

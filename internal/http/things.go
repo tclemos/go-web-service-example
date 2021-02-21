@@ -29,7 +29,7 @@ func (c ThingsController) Create(ctx context.Context, r requests.CreateThing) {
 
 	err := c.svc.Create(ctx, t)
 	if err != nil {
-		logger.Errorf(err, "failed to load configuration")
+		logger.Errorf(err, "failed to notify thing created")
 	}
 }
 

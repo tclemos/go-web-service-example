@@ -12,13 +12,14 @@ import (
 )
 
 type ThingNotifier struct {
+	sqs       *sqs.SQS
 	queueName string
 	queueURL  string
 	session   *session.Session
 }
 
-func NewThingNotifier(qn string, s *session.Session, c *aws.Config) *ThingNotifier {
-	svc := sqs.New(s, c)
+func NewThingNotifier(qn string, s *session.Session) *ThingNotifier {
+	svc := sqs.New(s)
 	urlOutput, err := svc.GetQueueUrl(&sqs.GetQueueUrlInput{
 		QueueName: &qn,
 	})
@@ -28,6 +29,7 @@ func NewThingNotifier(qn string, s *session.Session, c *aws.Config) *ThingNotifi
 	}
 
 	return &ThingNotifier{
+		sqs:       svc,
 		queueName: qn,
 		queueURL:  *urlOutput.QueueUrl,
 		session:   s,
@@ -36,12 +38,10 @@ func NewThingNotifier(qn string, s *session.Session, c *aws.Config) *ThingNotifi
 
 func (n *ThingNotifier) NotifyThingCreated(e events.ThingCreated) error {
 
-	svc := sqs.New(n.session)
-
 	eventBytes, err := json.Marshal(e)
 	thingCreatedEvent := string(eventBytes)
 
-	_, err = svc.SendMessage(&sqs.SendMessageInput{
+	_, err = n.sqs.SendMessage(&sqs.SendMessageInput{
 		DelaySeconds:      aws.Int64(10),
 		MessageAttributes: map[string]*sqs.MessageAttributeValue{},
 		MessageBody:       &thingCreatedEvent,
