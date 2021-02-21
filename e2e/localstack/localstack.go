@@ -90,7 +90,7 @@ func (c *Container) AfterStart(ctx context.Context, r *dockertest.Resource) erro
 
 	s, err := session.NewSession(awsconfig.(*aws.Config))
 	if err != nil {
-		fmt.Println("localstack: waiting on server to start...")
+		fmt.Println("[e2e-localstack]failed to create aws session, err: %w", err)
 		return err
 	}
 	svc := sqs.New(s)
@@ -104,7 +104,7 @@ func (c *Container) AfterStart(ctx context.Context, r *dockertest.Resource) erro
 			QueueName: aws.String(q.Name),
 		})
 		if err != nil {
-			fmt.Printf("localstack: failed to create queue: %s\n", q.Name)
+			fmt.Printf("[e2e-localstack]failed to create queue: %s\n", q.Name)
 			return err
 		}
 	}
@@ -131,7 +131,7 @@ func (c *Container) awaitInitialization(ctx context.Context, svc *sqs.SQS) error
 			QueueName: aws.String("test-Resource"),
 		})
 		if err != nil {
-			fmt.Println("localstack: waiting on server to initialize...")
+			fmt.Println("[e2e-localstack]waiting on server to initialize...")
 			return retry.RetryableError(err)
 		}
 		return nil

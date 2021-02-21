@@ -121,11 +121,12 @@ func (c *Container) createDBURL(container *dockertest.Resource) url.URL {
 }
 
 func checkDb(ctx context.Context, dbURL url.URL) error {
+	fmt.Printf("[e2e-postgres]waiting on postgres server to be available: %s\n", dbURL.String())
 	// prepare a connection verification interval. Use a Fibonacci backoff
 	// instead of exponential so wait times scale appropriately.
 	b, err := retry.NewFibonacci(500 * time.Millisecond)
 	if err != nil {
-		err = errors.Wrap(err, "failed to configure retries to check db connection")
+		err = errors.Wrap(err, "[e2e-postgres]failed to configure retries to check db connection")
 		return err
 	}
 
@@ -141,25 +142,28 @@ func checkDb(ctx context.Context, dbURL url.URL) error {
 		return nil
 	})
 	if err != nil {
-		err = errors.Wrap(err, "failed to start postgres")
+		err = errors.Wrap(err, "[e2e-postgres]failed to start postgres")
 		return err
 	}
 
+	fmt.Printf("[e2e-postgres]postgres available at: %s\n", dbURL.String())
 	return nil
 }
 
 func runMigrations(migrationsDirectory string, dbURL url.URL) error {
+	fmt.Printf("[e2e-postgres]preparing to execute migrations: %s\n", dbURL.String())
 	p := fmt.Sprintf("file://%s", migrationsDirectory)
 	m, err := migrate.New(p, dbURL.String())
 	if err != nil {
-		err = errors.Wrap(err, "failed to connect to database")
+		err = errors.Wrap(err, "[e2e-postgres]failed to connect to database")
 		return err
 	}
 
 	err = m.Up()
 	if err != nil {
-		err = errors.Wrap(err, "failed to migrate database")
+		err = errors.Wrap(err, "[e2e-postgres]failed to migrate database")
 		return err
 	}
+	fmt.Print("[e2e-postgres]migrations executed successfuly\n")
 	return nil
 }
