@@ -109,7 +109,7 @@ func startContainer(ctx context.Context, p *dockertest.Pool, o *dockertest.RunOp
 		return nil, err
 	}
 
-	err = r.Expire(50) // drop containers after 3 minutes if the got stuck
+	//err = r.Expire(50) // drop containers after 3 minutes if the got stuck
 	if err != nil {
 		errors.Wrap(err, "could not setup container to expire: %s")
 	}

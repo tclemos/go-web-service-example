@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/pkg/errors"
@@ -42,7 +41,6 @@ func (n *ThingNotifier) NotifyThingCreated(e events.ThingCreated) error {
 	thingCreatedEvent := string(eventBytes)
 
 	_, err = n.sqs.SendMessage(&sqs.SendMessageInput{
-		DelaySeconds:      aws.Int64(10),
 		MessageAttributes: map[string]*sqs.MessageAttributeValue{},
 		MessageBody:       &thingCreatedEvent,
 		QueueUrl:          &n.queueURL,

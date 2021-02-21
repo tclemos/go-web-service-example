@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"testing"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/gofrs/uuid"
@@ -73,7 +72,6 @@ func TestCreateAndGet(t *testing.T) {
 
 	// awaits 1 second until the message can be received
 	// Assert Thing Created notification
-	time.Sleep(10000)
 	messages, err := sqsReceiver.Receive()
 	if err != nil {
 		t.Errorf("failed to receive thing created message, err: %w", err)

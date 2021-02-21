@@ -19,9 +19,7 @@ import (
 )
 
 const (
-	edgePort        = 4566
-	internalWebPort = 8080
-	externalWebPort = 8123
+	edgePort = 4566
 )
 
 type SqsQueue struct {
@@ -57,7 +55,7 @@ func (c *Container) Name() string {
 func (c *Container) Options() (*dockertest.RunOptions, error) {
 	pb := map[docker.Port][]docker.PortBinding{}
 	pb[docker.Port(fmt.Sprintf("%d/tcp", edgePort))] = []docker.PortBinding{{HostIP: "0.0.0.0", HostPort: strconv.Itoa(edgePort)}}
-	pb[docker.Port(fmt.Sprintf("%d/tcp", internalWebPort))] = []docker.PortBinding{{HostIP: "0.0.0.0", HostPort: strconv.Itoa(externalWebPort)}}
+
 	return &dockertest.RunOptions{
 		Name:       c.name,
 		Repository: "localstack/localstack",
