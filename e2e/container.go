@@ -7,7 +7,7 @@ import (
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/pkg/errors"
-	"github.com/tclemos/go-dockertest-example/logger"
+	"github.com/tclemos/go-dockertest-example/internal/actors/logger"
 )
 
 // We need these public variables to share information betwee

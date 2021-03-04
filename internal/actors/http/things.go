@@ -3,11 +3,11 @@ package http
 import (
 	"context"
 
+	"github.com/tclemos/go-dockertest-example/internal/actors/http/requests"
+	"github.com/tclemos/go-dockertest-example/internal/actors/http/responses"
+	"github.com/tclemos/go-dockertest-example/internal/actors/logger"
 	"github.com/tclemos/go-dockertest-example/internal/core/domain"
 	"github.com/tclemos/go-dockertest-example/internal/core/services"
-	"github.com/tclemos/go-dockertest-example/internal/http/requests"
-	"github.com/tclemos/go-dockertest-example/internal/http/responses"
-	"github.com/tclemos/go-dockertest-example/logger"
 )
 
 type ThingsController struct {

@@ -31,7 +31,7 @@ func TestMain(m *testing.M) {
 		User:                c.MyPostgresDb.User,
 		Password:            c.MyPostgresDb.Password,
 		Database:            c.MyPostgresDb.Database,
-		MigrationsDirectory: "./migrations",
+		MigrationsDirectory: "./actors/postgres/migrations",
 	})
 
 	localstack := localstack.NewContainer("localstack", localstack.Params{

@@ -9,12 +9,12 @@ import (
 	"github.com/tclemos/go-dockertest-example/config"
 	"github.com/tclemos/go-dockertest-example/e2e"
 	"github.com/tclemos/go-dockertest-example/e2e/localstack"
+	"github.com/tclemos/go-dockertest-example/internal/actors/http"
+	"github.com/tclemos/go-dockertest-example/internal/actors/http/requests"
+	"github.com/tclemos/go-dockertest-example/internal/actors/postgres"
+	"github.com/tclemos/go-dockertest-example/internal/actors/sqs"
 	"github.com/tclemos/go-dockertest-example/internal/core/domain/events"
-	"github.com/tclemos/go-dockertest-example/internal/core/queues/sqs"
 	"github.com/tclemos/go-dockertest-example/internal/core/services"
-	"github.com/tclemos/go-dockertest-example/internal/http"
-	"github.com/tclemos/go-dockertest-example/internal/http/requests"
-	"github.com/tclemos/go-dockertest-example/internal/repositories/postgres"
 )
 
 func TestCreateAndGet(t *testing.T) {
