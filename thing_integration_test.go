@@ -13,7 +13,7 @@ import (
 	"github.com/tclemos/go-dockertest-example/internal/actors/http/requests"
 	"github.com/tclemos/go-dockertest-example/internal/actors/postgres"
 	"github.com/tclemos/go-dockertest-example/internal/actors/sqs"
-	"github.com/tclemos/go-dockertest-example/internal/core/domain/events"
+	"github.com/tclemos/go-dockertest-example/internal/core/events"
 	"github.com/tclemos/go-dockertest-example/internal/core/services"
 )
 

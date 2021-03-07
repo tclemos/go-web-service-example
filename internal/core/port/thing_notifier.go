@@ -1,7 +1,7 @@
 package port
 
 import (
-	"github.com/tclemos/go-dockertest-example/internal/core/domain/events"
+	"github.com/tclemos/go-dockertest-example/internal/core/events"
 )
 
 type ThingNotifier interface {

@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/pkg/errors"
-	"github.com/tclemos/go-dockertest-example/internal/core/domain/events"
+	"github.com/tclemos/go-dockertest-example/internal/core/events"
 )
 
 type ThingNotifier struct {

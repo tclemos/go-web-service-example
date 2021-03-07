@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/tclemos/go-dockertest-example/internal/core/domain"
-	"github.com/tclemos/go-dockertest-example/internal/core/domain/events"
+	"github.com/tclemos/go-dockertest-example/internal/core/events"
 	"github.com/tclemos/go-dockertest-example/internal/core/port"
 )
 
