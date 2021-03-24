@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/jackc/pgx/v4"
-	"github.com/tclemos/go-dockertest-example/config"
+	"github.com/tclemos/go-web-service-example/config"
 )
 
 // NewConn creates a new postgres connection to be used across postgres repositories

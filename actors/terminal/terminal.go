@@ -4,8 +4,8 @@ import (
 	"context"
 	"os"
 
-	"github.com/tclemos/go-dockertest-example/internal/core/domain"
-	"github.com/tclemos/go-dockertest-example/internal/core/services"
+	"github.com/tclemos/go-web-service-example/core/domain"
+	"github.com/tclemos/go-web-service-example/core/services"
 )
 
 func main() {

@@ -3,7 +3,7 @@ package port
 import (
 	"context"
 
-	"github.com/tclemos/go-dockertest-example/internal/core/domain"
+	"github.com/tclemos/go-web-service-example/core/domain"
 )
 
 type ThingRepository interface {

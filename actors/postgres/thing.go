@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v4"
-	"github.com/tclemos/go-dockertest-example/internal/core/domain"
-	"github.com/tclemos/go-dockertest-example/internal/core/port"
+	"github.com/tclemos/go-web-service-example/core/domain"
+	"github.com/tclemos/go-web-service-example/core/port"
 )
 
 // ThingRepository for a postgres db

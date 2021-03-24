@@ -3,9 +3,9 @@ package services
 import (
 	"context"
 
-	"github.com/tclemos/go-dockertest-example/internal/core/domain"
-	"github.com/tclemos/go-dockertest-example/internal/core/events"
-	"github.com/tclemos/go-dockertest-example/internal/core/port"
+	"github.com/tclemos/go-web-service-example/core/domain"
+	"github.com/tclemos/go-web-service-example/core/events"
+	"github.com/tclemos/go-web-service-example/core/port"
 )
 
 type ThingService struct {
