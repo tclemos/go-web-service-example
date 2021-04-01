@@ -21,19 +21,18 @@ func main() {
 
 func Start(ctx context.Context, cfg config.Config) {
 
-	conn, err := postgres.NewConn(ctx, cfg.MyPostgresDb)
+	querier, err := postgres.NewQuerier(ctx, cfg.MyPostgresDb)
 	if err != nil {
-		panic(fmt.Sprintf("Failed to connect to postgres, err: %w, cfg: %v", err, cfg.MyPostgresDb))
+		panic(fmt.Sprintf("Failed to connect to postgres, err: %v, cfg: %v", err, cfg.MyPostgresDb))
 	}
-	defer conn.Close(ctx)
 
 	awsconfig := aws.NewConfig()
 	session, err := sqs.NewSession(awsconfig)
 	if err != nil {
-		panic(fmt.Sprintf("Failed to create sqs session, err: %w, cfg: %v", err, awsconfig))
+		panic(fmt.Sprintf("Failed to create sqs session, err: %v, cfg: %v", err, awsconfig))
 	}
 
-	tr := postgres.NewThingRepository(conn)
+	tr := postgres.NewThingRepository(querier)
 	tn := sqs.NewThingNotifier(cfg.ThingNotifier.QueueName, session)
 	ts := services.NewThingService(tr, tn)
 	tc := http.NewThingsController(ts)

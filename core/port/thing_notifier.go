@@ -1,9 +1,7 @@
 package port
 
-import (
-	"github.com/tclemos/go-web-service-example/core/events"
-)
+import "github.com/tclemos/go-web-service-example/core/domain"
 
 type ThingNotifier interface {
-	NotifyThingCreated(events.ThingCreated) error
+	NotifyThingCreated(domain.ThingCreated) error
 }

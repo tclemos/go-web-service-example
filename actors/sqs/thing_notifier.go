@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/pkg/errors"
-	"github.com/tclemos/go-web-service-example/core/events"
+	"github.com/tclemos/go-web-service-example/core/domain"
 )
 
 type ThingNotifier struct {
@@ -35,7 +35,7 @@ func NewThingNotifier(qn string, s *session.Session) *ThingNotifier {
 	}
 }
 
-func (n *ThingNotifier) NotifyThingCreated(e events.ThingCreated) error {
+func (n *ThingNotifier) NotifyThingCreated(e domain.ThingCreated) error {
 
 	eventBytes, err := json.Marshal(e)
 	thingCreatedEvent := string(eventBytes)

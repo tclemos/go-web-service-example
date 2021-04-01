@@ -4,9 +4,9 @@ go 1.16
 
 require (
 	github.com/aws/aws-sdk-go v1.38.3
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gofrs/uuid v4.0.0+incompatible
-	github.com/jackc/pgx/v4 v4.10.1
+	github.com/google/uuid v1.1.2
+	github.com/lib/pq v1.8.0
 	github.com/pkg/errors v0.9.1
-	github.com/tclemos/go-dockertest-example v0.0.0-20210307193456-79c5be18b0f3
-	github.com/tclemos/goit v1.0.0
 )

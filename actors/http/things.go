@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/tclemos/go-web-service-example/actors/http/requests"
 	"github.com/tclemos/go-web-service-example/actors/http/responses"
 	"github.com/tclemos/go-web-service-example/actors/logger"
@@ -21,23 +22,31 @@ func NewThingsController(ts *services.ThingService) *ThingsController {
 }
 
 func (c ThingsController) Create(ctx context.Context, r requests.CreateThing) {
+	cd, err := uuid.Parse(r.Code)
+	if err != nil {
+		logger.Errorf(err, "invalid thing code")
+		return
+	}
 
 	t := domain.Thing{
-		Code: domain.ThingCode(r.Code),
+		Code: domain.ThingCode(cd),
 		Name: r.Name,
 	}
 
-	err := c.svc.Create(ctx, t)
-	if err != nil {
+	if err := c.svc.Create(ctx, t); err != nil {
 		logger.Errorf(err, "failed to notify thing created")
 	}
 }
 
 func (c ThingsController) Get(ctx context.Context, r requests.GetThing) *responses.Thing {
 
-	code := domain.ThingCode(r.Code)
+	cd, err := uuid.Parse(r.Code)
+	if err != nil {
+		logger.Errorf(err, "invalid thing code")
+		return nil
+	}
 
-	t, err := c.svc.Get(ctx, code)
+	t, err := c.svc.GetByCode(ctx, domain.ThingCode(cd))
 	if err != nil {
 		return nil
 	}

@@ -2,16 +2,18 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	"net"
 	"net/url"
 	"strconv"
 
-	"github.com/jackc/pgx/v4"
+	_ "github.com/lib/pq"
+	"github.com/tclemos/go-web-service-example/actors/postgres/db"
 	"github.com/tclemos/go-web-service-example/config"
 )
 
 // NewConn creates a new postgres connection to be used across postgres repositories
-func NewConn(ctx context.Context, c config.PostgresConfig) (*pgx.Conn, error) {
+func NewQuerier(ctx context.Context, c config.PostgresConfig) (db.Querier, error) {
 
 	dbURL := url.URL{
 		Scheme: "postgres",
@@ -23,5 +25,12 @@ func NewConn(ctx context.Context, c config.PostgresConfig) (*pgx.Conn, error) {
 	q.Add("sslmode", "disable")
 	dbURL.RawQuery = q.Encode()
 
-	return pgx.Connect(ctx, dbURL.String())
+	d, err := sql.Open("postgres", dbURL.String())
+	if err != nil {
+		return nil, err
+	}
+
+	querier := db.New(d)
+
+	return querier, nil
 }

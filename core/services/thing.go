@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/tclemos/go-web-service-example/core/domain"
-	"github.com/tclemos/go-web-service-example/core/events"
 	"github.com/tclemos/go-web-service-example/core/port"
 )
 
@@ -25,7 +24,7 @@ func (s *ThingService) Create(ctx context.Context, t domain.Thing) error {
 		return err
 	}
 
-	tc := events.ThingCreated{Thing: t}
+	tc := domain.ThingCreated{Thing: t}
 	if err := s.notifier.NotifyThingCreated(tc); err != nil {
 		return err
 	}
@@ -33,6 +32,10 @@ func (s *ThingService) Create(ctx context.Context, t domain.Thing) error {
 	return nil
 }
 
-func (s *ThingService) Get(ctx context.Context, c domain.ThingCode) (*domain.Thing, error) {
-	return s.repo.Get(ctx, c)
+func (s *ThingService) Get(ctx context.Context, id domain.ThingID) (*domain.Thing, error) {
+	return s.repo.Get(ctx, id)
+}
+
+func (s *ThingService) GetByCode(ctx context.Context, c domain.ThingCode) (*domain.Thing, error) {
+	return s.repo.GetByCode(ctx, c)
 }
