@@ -1,0 +1,177 @@
+openapi: 3.0.0
+info:
+  version: 1.10.0
+  title: Things API
+  description: |
+    Things API exposes operations relevant for managing a thing storage
+  contact:
+    name: tclemos
+    # email: any@email.com
+    url: https://github.com/tclemos
+servers:
+  - url: "https://prod.thing.com/api/"
+    description: Production environment
+  - url: "https://stage.thing.com/api/"
+    description: Staging environment
+  - url: "https://dev.thing.com/api/"
+    description: Development environment
+paths:
+  /things:
+    get:
+      description: Returns all thing info from the storage
+      operationId: findThing
+      parameters:
+        - $ref: "#/components/parameters/pageNumber"
+        - $ref: "#/components/parameters/pageSize"
+
+      responses:
+        200:
+          description: Successful pull of thing info
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/thing"
+
+    post:
+      description: Creates a thing
+      operationId: createThing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/thing"
+      responses:
+        201:
+          description: Successfully created a new thing
+
+    put:
+      description: Updates thing info
+      operationId: updateThing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/thing"
+      responses:
+        200:
+          description: Successfully updated a new thing
+
+  /things/{code}:
+    get:
+      description: |
+        Returns an specific thing info accordinlgy to the provided code
+
+      parameters:
+        - $ref: "#/components/parameters/code"
+
+      responses:
+        200:
+          description: Successfully pull of specific thing info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/thing"
+        400:
+          $ref: "#/components/responses/400"
+        401:
+          $ref: "#/components/responses/401"
+        403:
+          $ref: "#/components/responses/403"
+        404:
+          $ref: "#/components/responses/404"
+
+    delete:
+      description: deletes a single thing based on the code provided
+      operationId: deleteThing
+      parameters:
+        - $ref: "#/components/parameters/code"
+      responses:
+        200:
+          description: Successfully deleted specific thing info
+        400:
+          $ref: "#/components/responses/400"
+        401:
+          $ref: "#/components/responses/401"
+        403:
+          $ref: "#/components/responses/403"
+        404:
+          $ref: "#/components/responses/404"
+
+components:
+  schemas:
+    thing:
+      type: object
+      properties:
+        code:
+          type: string
+          format: uuid
+          example: 12
+        name:
+          type: string
+          example: "something"
+      required:
+        - code
+        - name
+
+    error:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "This is the error message"
+      required:
+        - message
+
+  parameters:
+    code:
+      in: path
+      name: code
+      required: true
+      description: entity code
+      schema:
+        type: string
+        format: uuid
+        example: 123
+
+    pageNumber:
+      in: query
+      name: pageNumber
+      required: false
+      description: page number
+      schema:
+        type: integer
+        format: int32
+        default: 1
+        minimum: 1
+        example: 3
+
+    pageSize:
+      in: query
+      name: pageSize
+      required: false
+      description: page size
+      schema:
+        type: integer
+        format: int32
+        default: 25
+        minimum: 1
+        maximum: 100
+        example: 50
+
+  responses:
+    400:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/error"
+    401:
+      description: Unauthorized access
+    403:
+      description: Access not allowed
+    404:
+      description: Not Found

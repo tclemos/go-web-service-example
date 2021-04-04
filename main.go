@@ -37,8 +37,7 @@ func Start(ctx context.Context, cfg config.Config) {
 	ts := services.NewThingService(tr, tn)
 	tc := http.NewThingsController(ts)
 
-	server := http.NewServer()
-	server.AddController(tc)
+	server := http.NewServer(tc)
 
 	server.Start()
 }
