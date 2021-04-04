@@ -23,8 +23,10 @@ install-generate-api: ## install code generator for API files.
 	go get github.com/deepmap/oapi-codegen/cmd/oapi-codegen
 
 .PHONY: generate-api
-generate-api: ## generate api.gen.go file based on doc/api/spec.yaml
-	oapi-codegen -generate=types,server,spec -package http docs/http/spec.yaml > actors/http/generated.go
+generate-api: ## generate api server and client files based on doc/api/spec.yaml
+	oapi-codegen -generate=types,server -package http docs/http/spec.yaml > actors/http/generated.go \
+	&& oapi-codegen -generate=types,client -package thingshttpclient docs/http/spec.yaml > actors/http/client/things.go
+
 ## Help display.
 ## Pulls comments from beside commands and prints a nicely formatted
 ## display with the commands and their usage information.
