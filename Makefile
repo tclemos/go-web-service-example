@@ -2,6 +2,10 @@
 run: ## runs the application
 	go run main.go
 
+.PHONY: build
+build: ## builds the application
+	go build ./...
+
 .PHONY: test
 test: ## runs short tests
 	go test ./... -short
@@ -15,7 +19,7 @@ install-generate-sql: ## install code generator for SQL files.
 	go get github.com/kyleconroy/sqlc/cmd/sqlc
 
 .PHONY: generate-sql
-generate-from-sql: ## generate Go structs from SQL files.
+generate-sql: ## generate persistence Go files on actors/postgres/db based on actors/postgres/migrations and actors/postgres/queries .sql files
 	sqlc generate -f "./actors/postgres/sqlc.yaml"
 
 .PHONY: install-generate-api
@@ -23,9 +27,12 @@ install-generate-api: ## install code generator for API files.
 	go get github.com/deepmap/oapi-codegen/cmd/oapi-codegen
 
 .PHONY: generate-api
-generate-api: ## generate api server and client files based on doc/api/spec.yaml
-	oapi-codegen -generate=types,server -package http docs/http/spec.yaml > actors/http/generated.go \
-	&& oapi-codegen -generate=types,client -package thingshttpclient docs/http/spec.yaml > actors/http/client/things.go
+generate-api: ## generate api Go http server and client files based on docs/api/spec.yaml
+	oapi-codegen -generate=types,server -package api docs/api/spec.yaml > actors/http/api/api.gen.go && \
+	oapi-codegen -generate=types,client -package thingshttpclient docs/api/spec.yaml > actors/http/client/things.go
+
+.PHONY: generate
+generate: generate-api generate-sql ## run all generate commands
 
 ## Help display.
 ## Pulls comments from beside commands and prints a nicely formatted

@@ -1,4 +1,4 @@
-package http
+package controllers
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	"github.com/tclemos/go-web-service-example/actors/http/api"
 	"github.com/tclemos/go-web-service-example/actors/logger"
 	"github.com/tclemos/go-web-service-example/core/domain"
 	"github.com/tclemos/go-web-service-example/core/services"
@@ -21,21 +22,17 @@ func NewThingsController(ts *services.ThingService) *ThingsController {
 	}
 }
 
-func (c ThingsController) SetupHandlers(s ServerInterface) {
-
-}
-
 // (GET /things)
-func (c ThingsController) FindThing(ctx echo.Context, params FindThingParams) error {
+func (c ThingsController) FindThing(ctx echo.Context, params api.FindThingParams) error {
 	return nil
 }
 
 // (POST /things)
 func (c ThingsController) CreateThing(ctx echo.Context) error {
-	var t CreateThingJSONBody
+	var t api.CreateThingJSONBody
 	err := ctx.Bind(&t)
 	if err != nil {
-		return httpError(ctx, http.StatusBadRequest, "Invalid request body")
+		return api.NewError(ctx, http.StatusBadRequest, "Invalid request body")
 	}
 
 	cd, err := uuid.Parse(t.Code)
@@ -62,15 +59,15 @@ func (c ThingsController) UpdateThing(ctx echo.Context) error {
 }
 
 // (DELETE /things/{code})
-func (c ThingsController) DeleteThing(ctx echo.Context, code Code) error {
+func (c ThingsController) DeleteThing(ctx echo.Context, code api.Code) error {
 	return nil
 }
 
 // (GET /things/{code})
-func (c ThingsController) GetThingsCode(ctx echo.Context, code Code) error {
+func (c ThingsController) GetThingsCode(ctx echo.Context, code api.Code) error {
 	cd, err := uuid.Parse(string(code))
 	if err != nil {
-		return httpError(ctx, http.StatusBadRequest, fmt.Sprintf("invalid thing code: %s", code))
+		return api.NewError(ctx, http.StatusBadRequest, fmt.Sprintf("invalid thing code: %s", code))
 	}
 
 	t, err := c.svc.GetByCode(ctx.Request().Context(), domain.ThingCode(cd))
@@ -78,7 +75,7 @@ func (c ThingsController) GetThingsCode(ctx echo.Context, code Code) error {
 		return nil
 	}
 
-	res := &Thing{
+	res := &api.Thing{
 		Code: t.Code.String(),
 		Name: t.Name,
 	}

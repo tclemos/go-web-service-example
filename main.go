@@ -6,6 +6,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/tclemos/go-web-service-example/actors/http"
+	"github.com/tclemos/go-web-service-example/actors/http/controllers"
 	"github.com/tclemos/go-web-service-example/actors/postgres"
 	"github.com/tclemos/go-web-service-example/actors/sqs"
 	"github.com/tclemos/go-web-service-example/config"
@@ -35,7 +36,7 @@ func Start(ctx context.Context, cfg config.Config) {
 	tr := postgres.NewThingRepository(querier)
 	tn := sqs.NewThingNotifier(cfg.ThingNotifier.QueueName, session)
 	ts := services.NewThingService(tr, tn)
-	tc := http.NewThingsController(ts)
+	tc := controllers.NewThingsController(ts)
 
 	server := http.NewServer(tc)
 
