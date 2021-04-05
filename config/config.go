@@ -9,6 +9,7 @@ import (
 type Config struct {
 	MyPostgresDb  PostgresConfig `json:"my_postgres_db"`
 	ThingNotifier SqsConfig      `json:"thing_notifier"`
+	Http          HttpConfig     `json:"http"`
 }
 
 type PostgresConfig struct {
@@ -22,7 +23,17 @@ type PostgresConfig struct {
 
 type SqsConfig struct {
 	Region    string `json:"region"`
-	QueueName string `json:"queue_name`
+	Host      string `json:"host"`
+	Port      int    `json:"port"`
+	Id        string `json:"id"`
+	Secret    string `json:"secret"`
+	Token     string `json:"token"`
+	QueueName string `json:"queue_name"`
+}
+
+type HttpConfig struct {
+	Host string `json:"host"`
+	Port int    `json:"port"`
 }
 
 func LoadConfig(path string) Config {

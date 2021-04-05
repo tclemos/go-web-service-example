@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/tclemos/go-web-service-example/actors/http"
 	"github.com/tclemos/go-web-service-example/actors/http/controllers"
 	"github.com/tclemos/go-web-service-example/actors/postgres"
@@ -15,8 +14,10 @@ import (
 
 func main() {
 	// focus on integrated tests
-	cfg := config.Config{}
 	ctx := context.Background()
+
+	cfg := config.LoadConfig("./config/config.json")
+
 	Start(ctx, cfg)
 }
 
@@ -27,14 +28,8 @@ func Start(ctx context.Context, cfg config.Config) {
 		panic(fmt.Sprintf("Failed to connect to postgres, err: %v, cfg: %v", err, cfg.MyPostgresDb))
 	}
 
-	awsconfig := aws.NewConfig()
-	session, err := sqs.NewSession(awsconfig)
-	if err != nil {
-		panic(fmt.Sprintf("Failed to create sqs session, err: %v, cfg: %v", err, awsconfig))
-	}
-
 	tr := postgres.NewThingRepository(querier)
-	tn := sqs.NewThingNotifier(cfg.ThingNotifier.QueueName, session)
+	tn := sqs.NewThingNotifier(cfg.ThingNotifier.QueueName, cfg.ThingNotifier)
 	ts := services.NewThingService(tr, tn)
 	tc := controllers.NewThingsController(ts)
 
