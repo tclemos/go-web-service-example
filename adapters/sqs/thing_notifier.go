@@ -3,11 +3,11 @@ package sqs
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/pkg/errors"
-	"github.com/tclemos/go-web-service-example/config"
 	"github.com/tclemos/go-web-service-example/core/domain"
 )
 
@@ -27,25 +27,27 @@ type thingCreatedMessage struct {
 	Thing thing `json:"thing"`
 }
 
-func NewThingNotifier(qn string, c config.SqsConfig) *ThingNotifier {
+func NewThingNotifier() *ThingNotifier {
 
-	s, err := NewSession(c)
+	queueName := os.Getenv("THING_APP_NOTIFIER_QUEUENAME")
+
+	s, err := NewSession()
 	if err != nil {
-		panic(fmt.Sprintf("Failed to create thing notifier, err: %v, cfg: %v", err, c))
+		panic(fmt.Sprintf("Failed to create thing notifier, err: %v", err))
 	}
 
 	svc := sqs.New(s)
 	urlOutput, err := svc.GetQueueUrl(&sqs.GetQueueUrlInput{
-		QueueName: &qn,
+		QueueName: &queueName,
 	})
 
 	if err != nil {
-		panic(fmt.Errorf("failed to get the queueUrl of the queue: %s. err: %v", qn, err))
+		panic(fmt.Errorf("failed to get the queueUrl of the queue: %s. err: %v", queueName, err))
 	}
 
 	return &ThingNotifier{
 		sqs:       svc,
-		queueName: qn,
+		queueName: queueName,
 		queueURL:  *urlOutput.QueueUrl,
 		session:   s,
 	}

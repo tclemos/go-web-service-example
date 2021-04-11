@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/spf13/viper"
 	"github.com/tclemos/go-web-service-example/adapters/http"
 	"github.com/tclemos/go-web-service-example/adapters/http/controllers"
 	"github.com/tclemos/go-web-service-example/adapters/postgres"
@@ -14,7 +13,6 @@ import (
 
 func main() {
 	ctx := context.Background()
-	viper.SetEnvPrefix("THING_APP_")
 
 	querier, err := postgres.NewQuerier(ctx)
 	if err != nil {

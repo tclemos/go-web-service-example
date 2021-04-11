@@ -5,84 +5,97 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 	"os"
 	"strconv"
 	"testing"
 	"time"
 
-	"github.com/ory/dockertest"
+	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/sethvargo/go-retry"
 	thingshttpclient "github.com/tclemos/go-web-service-example/adapters/http/client"
-	"github.com/tclemos/go-web-service-example/config"
 	"github.com/tclemos/goit"
 	"github.com/tclemos/goit/aws"
 	"github.com/tclemos/goit/dockerfile"
 	"github.com/tclemos/goit/postgres"
 )
 
-var cfg = config.Config{
-	MyPostgresDb: config.PostgresConfig{
-		Host:     "localhost",
-		Port:     5432,
-		User:     "postgres",
-		Password: "password",
-		Database: "my_postgres_db",
-	},
-	ThingNotifier: config.SqsConfig{
-		Host:      "http://localhost",
-		Port:      4566,
-		Id:        "foo",
-		Secret:    "bar",
-		Token:     "",
-		QueueName: "thing_created",
-		Region:    "eu-central-1",
-	},
-	Http: config.HttpConfig{
-		Host: "localhost",
-		Port: 8123,
-	},
-}
+const (
+	postgresHost     = "localhost"
+	postgresPort     = 5432
+	postgresUser     = "postgres"
+	postgresPassword = "password"
+	postgresDatabase = "my_postgres_db"
 
-var dbUrl url.URL
+	awsHost      = "http://localhost"
+	awsPort      = 4566
+	awsID        = "foo"
+	awsSecret    = "bar"
+	awsToken     = ""
+	awsQueueName = "thing_created"
+	awsRegion    = "eu-central-1"
+
+	httpServerHost = "localhost"
+	httpServerPort = 8123
+)
+
 var sqsService *aws.SqsService
 
 func TestMain(m *testing.M) {
 
 	ctx := context.Background()
 
+	env := map[string]string{
+		"THING_APP_POSTGRES_HOST":     postgresHost,
+		"THING_APP_POSTGRES_PORT":     strconv.Itoa(postgresPort),
+		"THING_APP_POSTGRES_USER":     postgresUser,
+		"THING_APP_POSTGRES_PASSWORD": postgresPassword,
+		"THING_APP_POSTGRES_DATABASE": postgresDatabase,
+
+		"THING_APP_NOTIFIER_HOST":      awsHost,
+		"THING_APP_NOTIFIER_PORT":      strconv.Itoa(awsPort),
+		"THING_APP_NOTIFIER_ID":        awsID,
+		"THING_APP_NOTIFIER_SECRET":    awsSecret,
+		"THING_APP_NOTIFIER_TOKEN":     awsToken,
+		"THING_APP_NOTIFIER_QUEUENAME": awsQueueName,
+		"THING_APP_NOTIFIER_REGION":    awsRegion,
+
+		"THING_APP_HTTP_SERVER_HOST": httpServerHost,
+		"THING_APP_HTTP_SERVER_PORT": strconv.Itoa(httpServerPort),
+	}
+
 	postgresContainer := postgres.NewContainer(postgres.Params{
-		Port:     cfg.MyPostgresDb.Port,
-		User:     cfg.MyPostgresDb.User,
-		Password: cfg.MyPostgresDb.Password,
-		Database: cfg.MyPostgresDb.Database,
+		Port:     postgresPort,
+		User:     postgresUser,
+		Password: postgresPassword,
+		Database: postgresDatabase,
 	})
 
 	awsContainer := aws.NewContainer(aws.Params{
-		Region: cfg.ThingNotifier.Region,
-		Port:   cfg.ThingNotifier.Port,
+		Region: awsRegion,
+		Port:   awsPort,
 		SqsQueues: []aws.SqsQueue{
-			{Name: cfg.ThingNotifier.QueueName},
+			{Name: awsQueueName},
 		},
 	})
 
 	portBindings := make(map[docker.Port][]docker.PortBinding, 1)
-	portBindings[docker.Port(fmt.Sprintf("%d/tcp", cfg.Http.Port))] = []docker.PortBinding{{
+	portBindings[docker.Port(fmt.Sprintf("%d/tcp", httpServerPort))] = []docker.PortBinding{{
 		HostIP:   "0.0.0.0",
-		HostPort: strconv.Itoa(cfg.Http.Port),
+		HostPort: strconv.Itoa(httpServerPort),
 	}}
 
 	appContainer := dockerfile.NewContainer(dockerfile.Params{
 		ContainerName:  "thing service",
 		DockerFilePath: "./Dockerfile",
+		Env:            env,
 		PortBindings:   portBindings,
 		AfterStart: func(ctx context.Context, r *dockertest.Resource, m *map[string]interface{}) error {
 			b, _ := retry.NewFibonacci(500 * time.Millisecond)
 			b = retry.WithMaxRetries(10, b)
 			b = retry.WithCappedDuration(20*time.Second, b)
 
-			addr := fmt.Sprintf("%s:%d", cfg.Http.Host, cfg.Http.Port)
+			addr := fmt.Sprintf("%s:%d", httpServerHost, httpServerPort)
 			c, err := thingshttpclient.NewClient(addr, nil)
 			if err != nil {
 				return err
@@ -104,9 +117,12 @@ func TestMain(m *testing.M) {
 		},
 	})
 
-	goit.Start(ctx, postgresContainer, awsContainer) // appContainer
+	opt := goit.Options{
+		AutoRemoveContainers:         false,
+		ExpireContainersAfterSeconds: 600,
+	}
+	goit.StartWithOptions(ctx, opt, postgresContainer, awsContainer, appContainer)
 
-	dbUrl = postgresContainer.Url()
 	sqsService = awsContainer.SqsService
 
 	code := goit.Run(m)
@@ -120,7 +136,7 @@ func TestCreateGetThing(t *testing.T) {
 
 	ctx := context.Background()
 
-	addr := fmt.Sprintf("%s:%d", cfg.Http.Host, cfg.Http.Port)
+	addr := fmt.Sprintf("%s:%d", httpServerHost, httpServerPort)
 	c, err := thingshttpclient.NewClient(addr, nil)
 	if err != nil {
 		t.Errorf("failed to create things http client, err: %v", err)

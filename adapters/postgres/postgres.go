@@ -5,20 +5,28 @@ import (
 	"database/sql"
 	"net"
 	"net/url"
-	"strconv"
+	"os"
 
+	// postgres driver
 	_ "github.com/lib/pq"
 	"github.com/tclemos/go-web-service-example/adapters/postgres/db"
 )
 
-// NewConn creates a new postgres connection to be used across postgres repositories
-func NewQuerier(ctx context.Context, c config.PostgresConfig) (db.Querier, error) {
+// NewQuerier creates an object that contains all the query implentations
+// to be consumed by the repositories
+func NewQuerier(ctx context.Context) (db.Querier, error) {
+
+	user := os.Getenv("THING_APP_POSTGRES_USER")
+	password := os.Getenv("THING_APP_POSTGRES_PASSWORD")
+	host := os.Getenv("THING_APP_POSTGRES_HOST")
+	port := os.Getenv("THING_APP_POSTGRES_PORT")
+	database := os.Getenv("THING_APP_POSTGRES_DATABASE")
 
 	dbURL := url.URL{
 		Scheme: "postgres",
-		User:   url.UserPassword(c.User, c.Password),
-		Host:   net.JoinHostPort(c.Host, strconv.Itoa(c.Port)),
-		Path:   c.Database,
+		User:   url.UserPassword(user, password),
+		Host:   net.JoinHostPort(host, port),
+		Path:   database,
 	}
 	q := dbURL.Query()
 	q.Add("sslmode", "disable")
