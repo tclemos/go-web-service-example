@@ -6,8 +6,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"github.com/tclemos/go-web-service-example/actors/http/api"
-	"github.com/tclemos/go-web-service-example/actors/logger"
+	"github.com/tclemos/go-web-service-example/adapters/http/api"
+	"github.com/tclemos/go-web-service-example/adapters/logger"
 	"github.com/tclemos/go-web-service-example/core/domain"
 	"github.com/tclemos/go-web-service-example/core/services"
 )
@@ -23,7 +23,7 @@ func NewThingsController(ts *services.ThingService) *ThingsController {
 }
 
 // (GET /things)
-func (c ThingsController) FindThing(ctx echo.Context, params api.FindThingParams) error {
+func (c ThingsController) GetAllThings(ctx echo.Context, params api.GetAllThingsParams) error {
 	return nil
 }
 
@@ -64,7 +64,7 @@ func (c ThingsController) DeleteThing(ctx echo.Context, code api.Code) error {
 }
 
 // (GET /things/{code})
-func (c ThingsController) GetThingsCode(ctx echo.Context, code api.Code) error {
+func (c ThingsController) GetThing(ctx echo.Context, code api.Code) error {
 	cd, err := uuid.Parse(string(code))
 	if err != nil {
 		return api.NewError(ctx, http.StatusBadRequest, fmt.Sprintf("invalid thing code: %s", code))

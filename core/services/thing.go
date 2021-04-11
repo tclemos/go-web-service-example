@@ -4,15 +4,15 @@ import (
 	"context"
 
 	"github.com/tclemos/go-web-service-example/core/domain"
-	"github.com/tclemos/go-web-service-example/core/port"
+	"github.com/tclemos/go-web-service-example/core/ports"
 )
 
 type ThingService struct {
-	repo     port.ThingRepository
-	notifier port.ThingNotifier
+	repo     ports.ThingRepository
+	notifier ports.ThingNotifier
 }
 
-func NewThingService(tr port.ThingRepository, tn port.ThingNotifier) *ThingService {
+func NewThingService(tr ports.ThingRepository, tn ports.ThingNotifier) *ThingService {
 	return &ThingService{
 		repo:     tr,
 		notifier: tn,

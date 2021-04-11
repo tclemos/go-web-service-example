@@ -14,7 +14,7 @@ import (
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/sethvargo/go-retry"
-	thingshttpclient "github.com/tclemos/go-web-service-example/actors/http/client"
+	thingshttpclient "github.com/tclemos/go-web-service-example/adapters/http/client"
 	"github.com/tclemos/go-web-service-example/config"
 	"github.com/tclemos/goit"
 	"github.com/tclemos/goit/aws"
@@ -140,12 +140,12 @@ func TestCreateGetThing(t *testing.T) {
 		return
 	}
 
-	res, err = c.GetThingsCode(ctx, thingshttpclient.Code(code))
+	res, err = c.GetThing(ctx, thingshttpclient.Code(code))
 	if err != nil {
 		t.Errorf("failed to call get thing API, err: %v", err)
 		return
 	}
-	getThingsRes, err := thingshttpclient.ParseGetThingsCodeResponse(res)
+	getThingsRes, err := thingshttpclient.ParseGetThingResponse(res)
 	if err != nil {
 		t.Errorf("failed to parse created thing response, err: %v", err)
 		return

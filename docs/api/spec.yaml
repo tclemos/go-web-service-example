@@ -16,10 +16,23 @@ servers:
   - url: "https://dev.thing.com/api/"
     description: Development environment
 paths:
+  /ping:
+    get:
+      description: Service health check
+      operationId: ping
+      responses:
+        200:
+          description: Service is working
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "pong"
+
   /things:
     get:
       description: Returns all thing info from the storage
-      operationId: findThing
+      operationId: getAllThings
       parameters:
         - $ref: "#/components/parameters/pageNumber"
         - $ref: "#/components/parameters/pageSize"
@@ -64,7 +77,7 @@ paths:
     get:
       description: |
         Returns an specific thing info accordinlgy to the provided code
-
+      operationId: getThing
       parameters:
         - $ref: "#/components/parameters/code"
 

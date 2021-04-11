@@ -40,8 +40,8 @@ type PageSize int32
 // N400 defines model for 400.
 type N400 Error
 
-// FindThingParams defines parameters for FindThing.
-type FindThingParams struct {
+// GetAllThingsParams defines parameters for GetAllThings.
+type GetAllThingsParams struct {
 
 	// page number
 	PageNumber *PageNumber `json:"pageNumber,omitempty"`
@@ -135,8 +135,11 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
-	// FindThing request
-	FindThing(ctx context.Context, params *FindThingParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// Ping request
+	Ping(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetAllThings request
+	GetAllThings(ctx context.Context, params *GetAllThingsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateThing request  with any body
 	CreateThingWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -151,12 +154,24 @@ type ClientInterface interface {
 	// DeleteThing request
 	DeleteThing(ctx context.Context, code Code, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetThingsCode request
-	GetThingsCode(ctx context.Context, code Code, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetThing request
+	GetThing(ctx context.Context, code Code, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
-func (c *Client) FindThing(ctx context.Context, params *FindThingParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewFindThingRequest(c.Server, params)
+func (c *Client) Ping(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPingRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAllThings(ctx context.Context, params *GetAllThingsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAllThingsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -227,8 +242,8 @@ func (c *Client) DeleteThing(ctx context.Context, code Code, reqEditors ...Reque
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetThingsCode(ctx context.Context, code Code, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetThingsCodeRequest(c.Server, code)
+func (c *Client) GetThing(ctx context.Context, code Code, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetThingRequest(c.Server, code)
 	if err != nil {
 		return nil, err
 	}
@@ -239,8 +254,35 @@ func (c *Client) GetThingsCode(ctx context.Context, code Code, reqEditors ...Req
 	return c.Client.Do(req)
 }
 
-// NewFindThingRequest generates requests for FindThing
-func NewFindThingRequest(server string, params *FindThingParams) (*http.Request, error) {
+// NewPingRequest generates requests for Ping
+func NewPingRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/ping")
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetAllThingsRequest generates requests for GetAllThings
+func NewGetAllThingsRequest(server string, params *GetAllThingsParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -416,8 +458,8 @@ func NewDeleteThingRequest(server string, code Code) (*http.Request, error) {
 	return req, nil
 }
 
-// NewGetThingsCodeRequest generates requests for GetThingsCode
-func NewGetThingsCodeRequest(server string, code Code) (*http.Request, error) {
+// NewGetThingRequest generates requests for GetThing
+func NewGetThingRequest(server string, code Code) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -493,8 +535,11 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
-	// FindThing request
-	FindThingWithResponse(ctx context.Context, params *FindThingParams, reqEditors ...RequestEditorFn) (*FindThingResponse, error)
+	// Ping request
+	PingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PingResponse, error)
+
+	// GetAllThings request
+	GetAllThingsWithResponse(ctx context.Context, params *GetAllThingsParams, reqEditors ...RequestEditorFn) (*GetAllThingsResponse, error)
 
 	// CreateThing request  with any body
 	CreateThingWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateThingResponse, error)
@@ -509,18 +554,18 @@ type ClientWithResponsesInterface interface {
 	// DeleteThing request
 	DeleteThingWithResponse(ctx context.Context, code Code, reqEditors ...RequestEditorFn) (*DeleteThingResponse, error)
 
-	// GetThingsCode request
-	GetThingsCodeWithResponse(ctx context.Context, code Code, reqEditors ...RequestEditorFn) (*GetThingsCodeResponse, error)
+	// GetThing request
+	GetThingWithResponse(ctx context.Context, code Code, reqEditors ...RequestEditorFn) (*GetThingResponse, error)
 }
 
-type FindThingResponse struct {
+type PingResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *[]Thing
+	JSON200      *string
 }
 
 // Status returns HTTPResponse.Status
-func (r FindThingResponse) Status() string {
+func (r PingResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -528,7 +573,29 @@ func (r FindThingResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r FindThingResponse) StatusCode() int {
+func (r PingResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAllThingsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]Thing
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAllThingsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAllThingsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -599,7 +666,7 @@ func (r DeleteThingResponse) StatusCode() int {
 	return 0
 }
 
-type GetThingsCodeResponse struct {
+type GetThingResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Thing
@@ -607,7 +674,7 @@ type GetThingsCodeResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetThingsCodeResponse) Status() string {
+func (r GetThingResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -615,20 +682,29 @@ func (r GetThingsCodeResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetThingsCodeResponse) StatusCode() int {
+func (r GetThingResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-// FindThingWithResponse request returning *FindThingResponse
-func (c *ClientWithResponses) FindThingWithResponse(ctx context.Context, params *FindThingParams, reqEditors ...RequestEditorFn) (*FindThingResponse, error) {
-	rsp, err := c.FindThing(ctx, params, reqEditors...)
+// PingWithResponse request returning *PingResponse
+func (c *ClientWithResponses) PingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PingResponse, error) {
+	rsp, err := c.Ping(ctx, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseFindThingResponse(rsp)
+	return ParsePingResponse(rsp)
+}
+
+// GetAllThingsWithResponse request returning *GetAllThingsResponse
+func (c *ClientWithResponses) GetAllThingsWithResponse(ctx context.Context, params *GetAllThingsParams, reqEditors ...RequestEditorFn) (*GetAllThingsResponse, error) {
+	rsp, err := c.GetAllThings(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAllThingsResponse(rsp)
 }
 
 // CreateThingWithBodyWithResponse request with arbitrary body returning *CreateThingResponse
@@ -674,24 +750,50 @@ func (c *ClientWithResponses) DeleteThingWithResponse(ctx context.Context, code 
 	return ParseDeleteThingResponse(rsp)
 }
 
-// GetThingsCodeWithResponse request returning *GetThingsCodeResponse
-func (c *ClientWithResponses) GetThingsCodeWithResponse(ctx context.Context, code Code, reqEditors ...RequestEditorFn) (*GetThingsCodeResponse, error) {
-	rsp, err := c.GetThingsCode(ctx, code, reqEditors...)
+// GetThingWithResponse request returning *GetThingResponse
+func (c *ClientWithResponses) GetThingWithResponse(ctx context.Context, code Code, reqEditors ...RequestEditorFn) (*GetThingResponse, error) {
+	rsp, err := c.GetThing(ctx, code, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetThingsCodeResponse(rsp)
+	return ParseGetThingResponse(rsp)
 }
 
-// ParseFindThingResponse parses an HTTP response from a FindThingWithResponse call
-func ParseFindThingResponse(rsp *http.Response) (*FindThingResponse, error) {
+// ParsePingResponse parses an HTTP response from a PingWithResponse call
+func ParsePingResponse(rsp *http.Response) (*PingResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &FindThingResponse{
+	response := &PingResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest string
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAllThingsResponse parses an HTTP response from a GetAllThingsWithResponse call
+func ParseGetAllThingsResponse(rsp *http.Response) (*GetAllThingsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAllThingsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -773,15 +875,15 @@ func ParseDeleteThingResponse(rsp *http.Response) (*DeleteThingResponse, error) 
 	return response, nil
 }
 
-// ParseGetThingsCodeResponse parses an HTTP response from a GetThingsCodeWithResponse call
-func ParseGetThingsCodeResponse(rsp *http.Response) (*GetThingsCodeResponse, error) {
+// ParseGetThingResponse parses an HTTP response from a GetThingWithResponse call
+func ParseGetThingResponse(rsp *http.Response) (*GetThingResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetThingsCodeResponse{
+	response := &GetThingResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}

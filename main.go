@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/tclemos/go-web-service-example/actors/http"
-	"github.com/tclemos/go-web-service-example/actors/http/controllers"
-	"github.com/tclemos/go-web-service-example/actors/postgres"
-	"github.com/tclemos/go-web-service-example/actors/sqs"
+	"github.com/tclemos/go-web-service-example/adapters/http"
+	"github.com/tclemos/go-web-service-example/adapters/http/controllers"
+	"github.com/tclemos/go-web-service-example/adapters/postgres"
+	"github.com/tclemos/go-web-service-example/adapters/sqs"
 	"github.com/tclemos/go-web-service-example/config"
 	"github.com/tclemos/go-web-service-example/core/services"
 )

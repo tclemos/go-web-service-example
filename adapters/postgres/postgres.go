@@ -8,7 +8,7 @@ import (
 	"strconv"
 
 	_ "github.com/lib/pq"
-	"github.com/tclemos/go-web-service-example/actors/postgres/db"
+	"github.com/tclemos/go-web-service-example/adapters/postgres/db"
 	"github.com/tclemos/go-web-service-example/config"
 )
 

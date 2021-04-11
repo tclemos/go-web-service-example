@@ -34,8 +34,8 @@ type PageSize int32
 // N400 defines model for 400.
 type N400 Error
 
-// FindThingParams defines parameters for FindThing.
-type FindThingParams struct {
+// GetAllThingsParams defines parameters for GetAllThings.
+type GetAllThingsParams struct {
 
 	// page number
 	PageNumber *PageNumber `json:"pageNumber,omitempty"`
@@ -59,8 +59,11 @@ type UpdateThingJSONRequestBody UpdateThingJSONBody
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
+	// (GET /ping)
+	Ping(ctx echo.Context) error
+
 	// (GET /things)
-	FindThing(ctx echo.Context, params FindThingParams) error
+	GetAllThings(ctx echo.Context, params GetAllThingsParams) error
 
 	// (POST /things)
 	CreateThing(ctx echo.Context) error
@@ -72,7 +75,7 @@ type ServerInterface interface {
 	DeleteThing(ctx echo.Context, code Code) error
 
 	// (GET /things/{code})
-	GetThingsCode(ctx echo.Context, code Code) error
+	GetThing(ctx echo.Context, code Code) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -80,12 +83,21 @@ type ServerInterfaceWrapper struct {
 	Handler ServerInterface
 }
 
-// FindThing converts echo context to params.
-func (w *ServerInterfaceWrapper) FindThing(ctx echo.Context) error {
+// Ping converts echo context to params.
+func (w *ServerInterfaceWrapper) Ping(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.Ping(ctx)
+	return err
+}
+
+// GetAllThings converts echo context to params.
+func (w *ServerInterfaceWrapper) GetAllThings(ctx echo.Context) error {
 	var err error
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params FindThingParams
+	var params GetAllThingsParams
 	// ------------- Optional query parameter "pageNumber" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "pageNumber", ctx.QueryParams(), &params.PageNumber)
@@ -101,7 +113,7 @@ func (w *ServerInterfaceWrapper) FindThing(ctx echo.Context) error {
 	}
 
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.FindThing(ctx, params)
+	err = w.Handler.GetAllThings(ctx, params)
 	return err
 }
 
@@ -139,8 +151,8 @@ func (w *ServerInterfaceWrapper) DeleteThing(ctx echo.Context) error {
 	return err
 }
 
-// GetThingsCode converts echo context to params.
-func (w *ServerInterfaceWrapper) GetThingsCode(ctx echo.Context) error {
+// GetThing converts echo context to params.
+func (w *ServerInterfaceWrapper) GetThing(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "code" -------------
 	var code Code
@@ -151,7 +163,7 @@ func (w *ServerInterfaceWrapper) GetThingsCode(ctx echo.Context) error {
 	}
 
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetThingsCode(ctx, code)
+	err = w.Handler.GetThing(ctx, code)
 	return err
 }
 
@@ -183,11 +195,12 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
-	router.GET(baseURL+"/things", wrapper.FindThing)
+	router.GET(baseURL+"/ping", wrapper.Ping)
+	router.GET(baseURL+"/things", wrapper.GetAllThings)
 	router.POST(baseURL+"/things", wrapper.CreateThing)
 	router.PUT(baseURL+"/things", wrapper.UpdateThing)
 	router.DELETE(baseURL+"/things/:code", wrapper.DeleteThing)
-	router.GET(baseURL+"/things/:code", wrapper.GetThingsCode)
+	router.GET(baseURL+"/things/:code", wrapper.GetThing)
 
 }
 

@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/tclemos/go-web-service-example/actors/postgres/db"
+	"github.com/tclemos/go-web-service-example/adapters/postgres/db"
 	"github.com/tclemos/go-web-service-example/core/domain"
-	"github.com/tclemos/go-web-service-example/core/port"
+	"github.com/tclemos/go-web-service-example/core/ports"
 )
 
 // ThingRepository for a postgres db
@@ -15,7 +15,7 @@ type ThingRepository struct {
 }
 
 // NewThingRepository creates and initialises an instance of
-func NewThingRepository(q db.Querier) port.ThingRepository {
+func NewThingRepository(q db.Querier) ports.ThingRepository {
 	return &ThingRepository{
 		q: q,
 	}
