@@ -6,6 +6,12 @@ import (
 	"github.com/google/uuid"
 )
 
+type AnotherThing struct {
+	ID   int32     `json:"id"`
+	Code uuid.UUID `json:"code"`
+	Name string    `json:"name"`
+}
+
 type Thing struct {
 	ID   int32     `json:"id"`
 	Code uuid.UUID `json:"code"`

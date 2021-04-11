@@ -4,32 +4,25 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/spf13/viper"
 	"github.com/tclemos/go-web-service-example/adapters/http"
 	"github.com/tclemos/go-web-service-example/adapters/http/controllers"
 	"github.com/tclemos/go-web-service-example/adapters/postgres"
 	"github.com/tclemos/go-web-service-example/adapters/sqs"
-	"github.com/tclemos/go-web-service-example/config"
 	"github.com/tclemos/go-web-service-example/core/services"
 )
 
 func main() {
-	// focus on integrated tests
 	ctx := context.Background()
+	viper.SetEnvPrefix("THING_APP_")
 
-	cfg := config.LoadConfig("./config/config.json")
-
-	Start(ctx, cfg)
-}
-
-func Start(ctx context.Context, cfg config.Config) {
-
-	querier, err := postgres.NewQuerier(ctx, cfg.MyPostgresDb)
+	querier, err := postgres.NewQuerier(ctx)
 	if err != nil {
-		panic(fmt.Sprintf("Failed to connect to postgres, err: %v, cfg: %v", err, cfg.MyPostgresDb))
+		panic(fmt.Sprintf("Failed to connect to postgres, err: %v", err))
 	}
 
 	tr := postgres.NewThingRepository(querier)
-	tn := sqs.NewThingNotifier(cfg.ThingNotifier.QueueName, cfg.ThingNotifier)
+	tn := sqs.NewThingNotifier()
 	ts := services.NewThingService(tr, tn)
 	tc := controllers.NewThingsController(ts)
 

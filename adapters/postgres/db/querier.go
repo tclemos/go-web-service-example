@@ -9,12 +9,19 @@ import (
 )
 
 type Querier interface {
+	CreateAnotherThing(ctx context.Context, arg CreateAnotherThingParams) (AnotherThing, error)
 	CreateThing(ctx context.Context, arg CreateThingParams) (Thing, error)
+	DeleteAnotherThing(ctx context.Context, id int32) error
+	DeleteAnotherThingByCode(ctx context.Context, code uuid.UUID) error
 	DeleteThing(ctx context.Context, id int32) error
 	DeleteThingByCode(ctx context.Context, code uuid.UUID) error
+	GetAnotherThing(ctx context.Context, id int32) (AnotherThing, error)
+	GetAnotherThingByCode(ctx context.Context, code uuid.UUID) (AnotherThing, error)
 	GetThing(ctx context.Context, id int32) (Thing, error)
 	GetThingByCode(ctx context.Context, code uuid.UUID) (Thing, error)
+	ListAnotherThings(ctx context.Context) ([]AnotherThing, error)
 	ListThings(ctx context.Context) ([]Thing, error)
+	UpdateAnotherThing(ctx context.Context, arg UpdateAnotherThingParams) (AnotherThing, error)
 	UpdateThing(ctx context.Context, arg UpdateThingParams) (Thing, error)
 }
 

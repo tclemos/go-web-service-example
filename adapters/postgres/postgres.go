@@ -9,7 +9,6 @@ import (
 
 	_ "github.com/lib/pq"
 	"github.com/tclemos/go-web-service-example/adapters/postgres/db"
-	"github.com/tclemos/go-web-service-example/config"
 )
 
 // NewConn creates a new postgres connection to be used across postgres repositories

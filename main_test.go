@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ory/dockertest/v3"
+	"github.com/ory/dockertest"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/sethvargo/go-retry"
 	thingshttpclient "github.com/tclemos/go-web-service-example/adapters/http/client"
@@ -77,14 +77,19 @@ func TestMain(m *testing.M) {
 		ContainerName:  "thing service",
 		DockerFilePath: "./Dockerfile",
 		PortBindings:   portBindings,
-		AfterStart: func(c context.Context, r *dockertest.Resource, m *map[string]interface{}) error {
+		AfterStart: func(ctx context.Context, r *dockertest.Resource, m *map[string]interface{}) error {
 			b, _ := retry.NewFibonacci(500 * time.Millisecond)
 			b = retry.WithMaxRetries(10, b)
 			b = retry.WithCappedDuration(20*time.Second, b)
 
-			err := retry.Do(c, b, func(ctx context.Context) error {
-				addr := fmt.Sprintf("http://localhost:%d/ping", cfg.Http.Port)
-				res, err := http.DefaultClient.Get(addr)
+			addr := fmt.Sprintf("%s:%d", cfg.Http.Host, cfg.Http.Port)
+			c, err := thingshttpclient.NewClient(addr, nil)
+			if err != nil {
+				return err
+			}
+
+			err = retry.Do(ctx, b, func(ctx context.Context) error {
+				res, err := c.Ping(ctx)
 				if err != nil || res.StatusCode != http.StatusOK {
 					fmt.Println("waiting on thing http server to initialize...")
 					return retry.RetryableError(err)
@@ -99,7 +104,8 @@ func TestMain(m *testing.M) {
 		},
 	})
 
-	goit.Start(ctx, postgresContainer, awsContainer, appContainer)
+	goit.Start(ctx, postgresContainer, awsContainer) // appContainer
+
 	dbUrl = postgresContainer.Url()
 	sqsService = awsContainer.SqsService
 

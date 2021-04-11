@@ -22,8 +22,17 @@ func New(db DBTX) *Queries {
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
+	if q.createAnotherThingStmt, err = db.PrepareContext(ctx, createAnotherThing); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateAnotherThing: %w", err)
+	}
 	if q.createThingStmt, err = db.PrepareContext(ctx, createThing); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateThing: %w", err)
+	}
+	if q.deleteAnotherThingStmt, err = db.PrepareContext(ctx, deleteAnotherThing); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteAnotherThing: %w", err)
+	}
+	if q.deleteAnotherThingByCodeStmt, err = db.PrepareContext(ctx, deleteAnotherThingByCode); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteAnotherThingByCode: %w", err)
 	}
 	if q.deleteThingStmt, err = db.PrepareContext(ctx, deleteThing); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteThing: %w", err)
@@ -31,14 +40,26 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteThingByCodeStmt, err = db.PrepareContext(ctx, deleteThingByCode); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteThingByCode: %w", err)
 	}
+	if q.getAnotherThingStmt, err = db.PrepareContext(ctx, getAnotherThing); err != nil {
+		return nil, fmt.Errorf("error preparing query GetAnotherThing: %w", err)
+	}
+	if q.getAnotherThingByCodeStmt, err = db.PrepareContext(ctx, getAnotherThingByCode); err != nil {
+		return nil, fmt.Errorf("error preparing query GetAnotherThingByCode: %w", err)
+	}
 	if q.getThingStmt, err = db.PrepareContext(ctx, getThing); err != nil {
 		return nil, fmt.Errorf("error preparing query GetThing: %w", err)
 	}
 	if q.getThingByCodeStmt, err = db.PrepareContext(ctx, getThingByCode); err != nil {
 		return nil, fmt.Errorf("error preparing query GetThingByCode: %w", err)
 	}
+	if q.listAnotherThingsStmt, err = db.PrepareContext(ctx, listAnotherThings); err != nil {
+		return nil, fmt.Errorf("error preparing query ListAnotherThings: %w", err)
+	}
 	if q.listThingsStmt, err = db.PrepareContext(ctx, listThings); err != nil {
 		return nil, fmt.Errorf("error preparing query ListThings: %w", err)
+	}
+	if q.updateAnotherThingStmt, err = db.PrepareContext(ctx, updateAnotherThing); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateAnotherThing: %w", err)
 	}
 	if q.updateThingStmt, err = db.PrepareContext(ctx, updateThing); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateThing: %w", err)
@@ -48,9 +69,24 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 
 func (q *Queries) Close() error {
 	var err error
+	if q.createAnotherThingStmt != nil {
+		if cerr := q.createAnotherThingStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createAnotherThingStmt: %w", cerr)
+		}
+	}
 	if q.createThingStmt != nil {
 		if cerr := q.createThingStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createThingStmt: %w", cerr)
+		}
+	}
+	if q.deleteAnotherThingStmt != nil {
+		if cerr := q.deleteAnotherThingStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteAnotherThingStmt: %w", cerr)
+		}
+	}
+	if q.deleteAnotherThingByCodeStmt != nil {
+		if cerr := q.deleteAnotherThingByCodeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteAnotherThingByCodeStmt: %w", cerr)
 		}
 	}
 	if q.deleteThingStmt != nil {
@@ -63,6 +99,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteThingByCodeStmt: %w", cerr)
 		}
 	}
+	if q.getAnotherThingStmt != nil {
+		if cerr := q.getAnotherThingStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getAnotherThingStmt: %w", cerr)
+		}
+	}
+	if q.getAnotherThingByCodeStmt != nil {
+		if cerr := q.getAnotherThingByCodeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getAnotherThingByCodeStmt: %w", cerr)
+		}
+	}
 	if q.getThingStmt != nil {
 		if cerr := q.getThingStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getThingStmt: %w", cerr)
@@ -73,9 +119,19 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getThingByCodeStmt: %w", cerr)
 		}
 	}
+	if q.listAnotherThingsStmt != nil {
+		if cerr := q.listAnotherThingsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listAnotherThingsStmt: %w", cerr)
+		}
+	}
 	if q.listThingsStmt != nil {
 		if cerr := q.listThingsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listThingsStmt: %w", cerr)
+		}
+	}
+	if q.updateAnotherThingStmt != nil {
+		if cerr := q.updateAnotherThingStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateAnotherThingStmt: %w", cerr)
 		}
 	}
 	if q.updateThingStmt != nil {
@@ -120,27 +176,41 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db                    DBTX
-	tx                    *sql.Tx
-	createThingStmt       *sql.Stmt
-	deleteThingStmt       *sql.Stmt
-	deleteThingByCodeStmt *sql.Stmt
-	getThingStmt          *sql.Stmt
-	getThingByCodeStmt    *sql.Stmt
-	listThingsStmt        *sql.Stmt
-	updateThingStmt       *sql.Stmt
+	db                           DBTX
+	tx                           *sql.Tx
+	createAnotherThingStmt       *sql.Stmt
+	createThingStmt              *sql.Stmt
+	deleteAnotherThingStmt       *sql.Stmt
+	deleteAnotherThingByCodeStmt *sql.Stmt
+	deleteThingStmt              *sql.Stmt
+	deleteThingByCodeStmt        *sql.Stmt
+	getAnotherThingStmt          *sql.Stmt
+	getAnotherThingByCodeStmt    *sql.Stmt
+	getThingStmt                 *sql.Stmt
+	getThingByCodeStmt           *sql.Stmt
+	listAnotherThingsStmt        *sql.Stmt
+	listThingsStmt               *sql.Stmt
+	updateAnotherThingStmt       *sql.Stmt
+	updateThingStmt              *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:                    tx,
-		tx:                    tx,
-		createThingStmt:       q.createThingStmt,
-		deleteThingStmt:       q.deleteThingStmt,
-		deleteThingByCodeStmt: q.deleteThingByCodeStmt,
-		getThingStmt:          q.getThingStmt,
-		getThingByCodeStmt:    q.getThingByCodeStmt,
-		listThingsStmt:        q.listThingsStmt,
-		updateThingStmt:       q.updateThingStmt,
+		db:                           tx,
+		tx:                           tx,
+		createAnotherThingStmt:       q.createAnotherThingStmt,
+		createThingStmt:              q.createThingStmt,
+		deleteAnotherThingStmt:       q.deleteAnotherThingStmt,
+		deleteAnotherThingByCodeStmt: q.deleteAnotherThingByCodeStmt,
+		deleteThingStmt:              q.deleteThingStmt,
+		deleteThingByCodeStmt:        q.deleteThingByCodeStmt,
+		getAnotherThingStmt:          q.getAnotherThingStmt,
+		getAnotherThingByCodeStmt:    q.getAnotherThingByCodeStmt,
+		getThingStmt:                 q.getThingStmt,
+		getThingByCodeStmt:           q.getThingByCodeStmt,
+		listAnotherThingsStmt:        q.listAnotherThingsStmt,
+		listThingsStmt:               q.listThingsStmt,
+		updateAnotherThingStmt:       q.updateAnotherThingStmt,
+		updateThingStmt:              q.updateThingStmt,
 	}
 }
