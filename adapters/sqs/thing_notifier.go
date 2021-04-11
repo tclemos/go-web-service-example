@@ -29,6 +29,8 @@ type thingCreatedMessage struct {
 
 func NewThingNotifier() *ThingNotifier {
 
+	return &ThingNotifier{}
+
 	queueName := os.Getenv("THING_APP_NOTIFIER_QUEUENAME")
 
 	s, err := NewSession()

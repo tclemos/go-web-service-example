@@ -9,7 +9,6 @@ require (
 	github.com/gofrs/uuid v4.0.0+incompatible
 	github.com/google/go-cmp v0.5.4 // indirect
 	github.com/google/uuid v1.1.2
-	github.com/kr/pretty v0.2.1 // indirect
 	github.com/labstack/echo/v4 v4.2.1
 	github.com/lib/pq v1.9.0
 	github.com/opencontainers/runc v1.0.0-rc93 // indirect
@@ -20,6 +19,5 @@ require (
 	github.com/tclemos/goit v0.4.0
 	golang.org/x/net v0.0.0-20210410081132-afb366fc7cd1 // indirect
 	golang.org/x/sys v0.0.0-20210403161142-5e06dd20ab57 // indirect
-	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
