@@ -1,4 +1,4 @@
-package port
+package ports
 
 import "github.com/tclemos/go-web-service-example/core/domain"
 

@@ -8,16 +8,6 @@ This project handles a sample scenario where `Things` need to be managed.
 
 ---
 
-## Architecture
-
-This project uses the `Hexagonal` software architecture.
-This project also contains the architectural and technical decisions taken during the project life persisted in `doc/arch` folder.
-
-**WHY?**
-Well, IMO having a software architecture in mind before starting to develop an application is a good thing, it helps a lot guiding the decisions during the development phase and since I was studying the `Hexagonal` architecture at the moment I was creating this example and the `Hexagonal` architecture aims keep the domain safe from external dependencies, so it seems to be a good fit.
-
-Keeping track of the decisions taken helps new joiners to understand the process of thinking at that moment of the project and also can guide the team during a new decision that needs to be taken. It works like db migrations, but for architectural and technical decisions.
-
 ## API
 
 This project uses `oapi-codegen` to generate the HTTP layer based on our documentation.
